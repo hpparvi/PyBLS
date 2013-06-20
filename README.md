@@ -23,14 +23,12 @@ Import the BLS class
 
 Create an instance
 
-	bls = BLS(time, flux, error, period_range=(300,400), nf=4500, nbin=2000, qmin=0.001, qmax=0.01)
+	bls = BLS(time, flux, error, period_range=(300,400), q_range=(0.001, 0.01), nf=4500, nbin=2000)
 
 or
 
 	bls = BLS(time, flux, error, fmin=0.00222, nf=4500, df=2e-7, nbin=2000, qmin=0.001, qmax=0.01)
 	
-run the search	
+and run the search	
 	
 	res = bls()
-
-The abovementioned parameters search for periods between 320 and 450 days, and seem to work well for super-Earths.
