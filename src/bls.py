@@ -38,11 +38,23 @@ class BLS(object):
                                           self.nbin, self.qmin, self.qmax))
         return self.result
 
-    
-    def get_farray(self):
+
+    @property
+    def frequency(self):
         return self.fmin + self.df*np.arange(self.nf)
 
+    @property
+    def period(self):
+        return 1./self.frequency
 
+    @property
+    def sde(self):
+        if self.result:
+            return self.result.sde
+        else:
+            return np.zeros(self.nf)
+
+        
 class BLSResult(object):
     def __init__(self, p, bper, bpow, depth, qtran, in1, in2):
         self.p = p 
@@ -57,4 +69,6 @@ class BLSResult(object):
     def __str__(self):
         return 'Power {pw:8.6f}   sde {sde:6.3f}   Period {pr:6.3f}   Freq {fr:6.3f}   Depth {df:6.3f}   qtran {qt:5.3f}'.format(pr=self.bper, sde=self.bsde, fr=1/self.bper, pw=self.bpow, df=self.depth, qt=self.qtran)
 
-    def get_sde(self): return (self.p - self.p.mean()) / self.p.std()
+    @property
+    def sde(self):
+        return (self.p - self.p.mean()) / self.p.std()
