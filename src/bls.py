@@ -6,6 +6,10 @@ import matplotlib.pyplot as pl
 
 from blsf import bls
 
+def fold(time, period, origo=0.0, shift=0.0):
+    return ((time - origo)/period + shift) % 1.
+
+
 class BLS(object):
     def __init__(self, time, flux, error, **kwargs):
         self.time = time
@@ -37,7 +41,7 @@ class BLS(object):
         self.result = BLSResult(*bls.eebls(self.time, self.flux, self.error, self.nf, self.fmin, self.df,
                                           self.nbin, self.qmin, self.qmax))
         return self.result
-
+        
 
     @property
     def frequency(self):
@@ -54,7 +58,37 @@ class BLS(object):
         else:
             return np.zeros(self.nf)
 
-        
+    @property
+    def phase(self):
+        """Return the time folded and normalised using the best identified period"""
+        return fold(self.time, self.result.bper, self.tc, 0.5) - 0.5
+
+    @property
+    def t1(self):
+        """Returns the start-of-transit epoch"""
+        return self.result.in1/self.nbin*self.result.bper + self.time[0]
+
+    @property
+    def t2(self):
+        """Returns the end-of-transit epoch"""
+        return self.result.in2/self.nbin*self.result.bper + self.time[0]
+
+    @property
+    def tc(self):
+        """Returns the mid-transit epoch"""
+        return 0.5*(self.result.in1+self.result.in2)/self.nbin*self.result.bper + self.time[0]
+    
+    @property
+    def p1(self):
+        """Returns the start-of-transit phase"""
+        return fold(self.t1, self.result.bper, self.tc, 0.5) - 0.5
+
+    @property
+    def p2(self):
+        """Returns the end-of-transit phase"""
+        return fold(self.t2, self.result.bper, self.tc, 0.5) - 0.5
+
+
 class BLSResult(object):
     def __init__(self, p, bper, bpow, depth, qtran, in1, in2):
         self.p = p 
