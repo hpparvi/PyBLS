@@ -3,7 +3,7 @@ from numpy.distutils.misc_util import Configuration
 import distutils.sysconfig as ds
 
 setup(name='PyBLS',
-      version='0.1',
+      version='0.9',
       description='Python wrapper for the BLS routine.',
       author='Hannu Parviainen',
       author_email='hpparvi@gmail.com',
