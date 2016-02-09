@@ -28,7 +28,7 @@ contains
 
   end subroutine bin
 
-  subroutine eebls(n,t,x,e,nf,fmin,df,nb,qmi,qma,p,bper,bpow,depth,qtran,in1,in2)
+  subroutine eebls(n,t,x,e,freq,nb,qmi,qma,nf,p,bper,bpow,depth,qtran,in1,in2)
     !!
     !!------------------------------------------------------------------------
     !!     >>>>>>>>>>>> This routine computes BLS spectrum <<<<<<<<<<<<<<
@@ -57,9 +57,8 @@ contains
     !!     u    = temporal/work/dummy array, must be dimensioned in the 
     !!            calling program in the same way as  {t(i)}
     !!     v    = the same as  {u(i)}
+    !!     freq = frequency array
     !!     nf   = number of frequency points in which the spectrum is computed
-    !!     fmin = minimum frequency (MUST be > 0)
-    !!     df   = frequency step
     !!     nb   = number of bins in the folded time series at any test period       
     !!     qmi  = minimum fractional transit length to be tested
     !!     qma  = maximum fractional transit length to be tested
@@ -97,8 +96,9 @@ contains
     integer, parameter :: MINBIN = 10
 
     integer, intent(in) :: n, nf, nb
-    real(8), intent(in) :: fmin, df, qmi, qma
+    real(8), intent(in) :: qmi, qma
     real(8), intent(in), dimension(n) :: t, x, e
+    real(8), intent(in), dimension(nf) :: freq
     integer, intent(out) :: in1, in2
     real(8), intent(out) :: bper, bpow, depth, qtran
     real(8), intent(out), dimension(nf) :: p
@@ -109,11 +109,6 @@ contains
 
     real(8), dimension(:), allocatable :: y, ws
     
-    if(fmin < 1.0d0/(t(n)-t(1))) then
-       write(*,*) ' fmin < 1/T !!'
-       write(*,*) t(1), t(n)
-    end if
-    
     minw = 0.75d0 / real(nb,8)
 
     !!------------------------------------------------------------------------
@@ -122,7 +117,6 @@ contains
     kmi=int(qmi*real(nb, 8))
     if(kmi < 1) kmi=1
     kma=int(qma*real(nb, 8))+1
-
     bpow=0.0d0
     
     allocate(y(nb+kma), ws(nb+kma))
@@ -141,16 +135,16 @@ contains
     !!******************************
     !$omp parallel do default(none) &
     !$omp private(i,j,k,s,ws,ww,jf,f0,p0,y,ph,pow,power,jn1,jn2,rn3,s3) &
-    !$omp shared(p,u,v,w,n,nf,nb,df,fmin,kma,kmi,qmi,minw,bpow,rn,in1,in2,qtran,depth,bper)
+    !$omp shared(p,u,v,w,n,nf,nb,freq,kma,kmi,qmi,minw,bpow,rn,in1,in2,qtran,depth,bper)
     do jf=1,nf
-       f0=fmin+df*(jf-1)
-       p0=1.0d0/f0
+       f0 = freq(jf)
+       p0 = 1.0d0/f0
        
        !!======================================================
        !!     Compute folded time series with  *p0*  period
        !!======================================================
-       y   = 0.0d0
-       ws  = 0.0d0
+       y  = 0.0d0
+       ws = 0.0d0
 
        do i=1,n
           ph     = mod(u(i)*f0, 1.0d0)

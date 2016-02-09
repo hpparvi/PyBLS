@@ -22,7 +22,8 @@ class BLS(object):
         self.nbin = kwargs.get('nbin', 1000)
         self.qmin = kwargs.get('qmin', 0.01)
         self.qmax = kwargs.get('qmax', 0.10)
-
+        self.fmode= kwargs.get('fmode', 'log')
+        
         if 'period_range' in kwargs.keys():
             self.period_range = np.array(kwargs.get('period_range'))
             self.freq_range = np.flipud(1/self.period_range)
@@ -36,16 +37,20 @@ class BLS(object):
         if 'q_range' in kwargs.keys():
             self.qmin, self.qmax = kwargs.get('q_range')
 
-
+        if self.fmode == 'linear':
+            self.freqs = np.linspace(*self.freq_range, num=self.nf)
+        else:
+            self.freqs = np.logspace(*np.log10(self.freq_range), num=self.nf)
+                
     def __call__(self):
-        self.result = BLSResult(*bls.eebls(self.time, self.flux, self.error, self.nf, self.fmin, self.df,
+        self.result = BLSResult(*bls.eebls(self.time, self.flux, self.error, self.freqs,
                                           self.nbin, self.qmin, self.qmax))
         return self.result
         
 
     @property
     def frequency(self):
-        return self.fmin + self.df*np.arange(self.nf)
+        return self.freqs
 
     @property
     def period(self):
