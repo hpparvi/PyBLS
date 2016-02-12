@@ -28,7 +28,7 @@ contains
 
   end subroutine bin
 
-  subroutine eebls(n,t,x,e,freq,nb,qmi,qma,nf,p,bper,bpow,depth,qtran,in1,in2)
+  subroutine eebls(n,t,x,e,freq,nb,qmi,qma,pmul,nf,p,bper,bpow,depth,qtran,in1,in2)
     !!
     !!------------------------------------------------------------------------
     !!     >>>>>>>>>>>> This routine computes BLS spectrum <<<<<<<<<<<<<<
@@ -98,7 +98,7 @@ contains
     integer, intent(in) :: n, nf, nb
     real(8), intent(in) :: qmi, qma
     real(8), intent(in), dimension(n) :: t, x, e
-    real(8), intent(in), dimension(nf) :: freq
+    real(8), intent(in), dimension(nf) :: freq, pmul
     integer, intent(out) :: in1, in2
     real(8), intent(out) :: bper, bpow, depth, qtran
     real(8), intent(out), dimension(nf) :: p
@@ -135,7 +135,7 @@ contains
     !!******************************
     !$omp parallel do default(none) &
     !$omp private(i,j,k,s,ws,ww,jf,f0,p0,y,ph,pow,power,jn1,jn2,rn3,s3) &
-    !$omp shared(p,u,v,w,n,nf,nb,freq,kma,kmi,qmi,minw,bpow,rn,in1,in2,qtran,depth,bper)
+    !$omp shared(p,u,v,w,n,nf,nb,pmul,freq,kma,kmi,qmi,minw,bpow,rn,in1,in2,qtran,depth,bper)
     do jf=1,nf
        f0 = freq(jf)
        p0 = 1.0d0/f0
@@ -191,6 +191,7 @@ contains
        end do
 
        power = sqrt(power)
+       power = power * pmul(jf) + (1.d0-pmul(jf))*sum(p(:jf))/real(jf,8)
        p(jf) = power
 
        !$omp critical

@@ -23,7 +23,8 @@ class BLS(object):
         self.qmin = kwargs.get('qmin', 0.01)
         self.qmax = kwargs.get('qmax', 0.10)
         self.fmode= kwargs.get('fmode', 'log')
-        
+        self.pmul = kwargs.get('pmul', np.ones(self.nf))
+
         if 'period_range' in kwargs.keys():
             self.period_range = np.array(kwargs.get('period_range'))
             self.freq_range = np.flipud(1/self.period_range)
@@ -44,7 +45,7 @@ class BLS(object):
                 
     def __call__(self):
         self.result = BLSResult(*bls.eebls(self.time, self.flux, self.error, self.freqs,
-                                          self.nbin, self.qmin, self.qmax))
+                                          self.nbin, self.qmin, self.qmax, self.pmul))
         return self.result
         
 
